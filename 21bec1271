@@ -1,0 +1,153 @@
+## 12345 - Frontend Application
+
+### Components
+
+* `App.js`: The main application component
+* `InputField.js`: The text input field component
+* `Dropdown.js`: The multi-select dropdown component
+* `Response.js`: The response rendering component
+
+### App.js
+```jsx
+import React, { useState } from 'react';
+import InputField from './InputField';
+import Dropdown from './Dropdown';
+import Response from './Response';
+npm install --save gh-pages
+
+
+function App() {
+  const [inputData, setInputData] = useState('');
+  const [selectedOptions, setSelectedOptions] = useState([]);
+  const [response, setResponse] = useState(null);
+
+  const handleInputChange = (event) => {
+    const jsonData = JSON.parse(event.target.value);
+    setInputData(jsonData);
+  };
+
+  const handleSubmit = () => {
+    if (!inputData) {
+      alert('Please enter valid JSON data');
+      return;
+    }
+
+    fetch('/api/endpoint', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(inputData),
+    })
+      .then((response) => response.json())
+      .then((data) => setResponse(data))
+      .catch((error) => console.error(error));
+  };
+
+  const handleOptionChange = (option) => {
+    setSelectedOptions((prevOptions) => [...prevOptions, option]);
+  };
+
+  return (
+    <div>
+      <h1>12345 - Frontend Application</h1>
+      <InputField
+        value={inputData}
+        onChange={handleInputChange}
+        onSubmit={handleSubmit}
+      />
+      {response && (
+        <Dropdown
+          options={['Alphabets', 'Numbers', 'Highest lowercase alphabet']}
+          selectedOptions={selectedOptions}
+          onChange={handleOptionChange}
+        />
+      )}
+      {response && (
+        <Response response={response} selectedOptions={selectedOptions} />
+      )}
+    </div>
+  );
+}
+
+export default App;
+
+
+
+import React from 'react';
+
+const InputField = ({ value, onChange, onSubmit }) => {
+  const [isValid, setIsValid] = useState(false);
+
+  const handleInputChange = (event) => {
+    const jsonData = JSON.parse(event.target.value);
+    if (jsonData && typeof jsonData === 'object') {
+      setIsValid(true);
+    } else {
+      setIsValid(false);
+    }
+    onChange(jsonData);
+  };
+
+  const handleBlur = () => {
+    setIsValid(false);
+  };
+
+  return (
+    <div>
+      <input
+        type="text"
+        value={value}
+        onChange={handleInputChange}
+        onBlur={handleBlur}
+        placeholder="Enter JSON data"
+      />
+      <button onClick={onSubmit}>Submit</button>
+      {isValid ? (
+        <p>JSON is valid</p>
+      ) : (
+        <p>JSON is invalid</p>
+      )}
+    </div>
+  );
+};
+
+export default InputField;
+
+
+import React from 'react';
+
+const Dropdown = ({ options, selectedOptions, onChange }) => {
+  return (
+    <select multiple onChange={(event) => onChange(event.target.value)}>
+      {options.map((option) => (
+        <option value={option}>{option}</option>
+      ))}
+    </select>
+  );
+};
+
+export default Dropdown;
+
+import React from 'react';
+
+const Response = ({ response, selectedOptions }) => {
+  const filteredResponse = response.filter((item) =>
+    selectedOptions.includes(item.type)
+  );
+
+  return (
+    <ul>
+      {filteredResponse.map((item) => (
+        <li key={item.id}>{item.data}</li>
+      ))}
+    </ul>
+  );
+};
+
+export default Response;
+
+
+import React from 'react';
+import ReactDOM from 'react-dom';
+import App from './App';
+
+ReactDOM.render(<App />, document.getElementById('root'));
